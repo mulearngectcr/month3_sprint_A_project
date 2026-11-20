@@ -1,205 +1,116 @@
-# Function Calling & Tool Integration
-## Month 3 Sprint A — Final Project
+# AI Financial Advisor Bot
 
-
-## Overview
-
-In this sprint, you learned how to give LLMs the ability to act — through function calling, multi-tool routing, and multi-agent handoffs. Your final project brings all of that together into one working agentic system.
-
-Build any project of your choice using the skills from all three tasks. The only requirement is that it must have at least two agents, at least two tools, and a handoff between agents.
+A minimal, production-ready multi-agent financial advisory application built with Python, the OpenAI Agents SDK (`openai-agents`), FastAPI, and Streamlit, powered by Groq LLMs.
 
 ---
 
-## Submission Guidelines
+## What It Does
 
-### 1. Fork the Repository
+The **AI Financial Advisor Bot** intelligently classifies and routes financial queries across specialized agents with single-hop structured handoffs:
 
-Click the **Fork** button at the top-right of this repository.
+- **Generalist Agent**: Answers general personal finance concepts (e.g. inflation, budgeting, emergency funds) directly. When specialized calculations are needed, it performs a structured handoff with context and reason.
+- **Loan Specialist**: Specializes in loans and mortgages, utilizing the `calculate_emi` tool to calculate Equated Monthly Installments (EMI).
+- **Investment Specialist**: Specializes in wealth growth and foreign exchange, utilizing `calculate_returns` (compound interest calculation) and `get_exchange_rate` (mock currency exchange lookup).
 
-### 2. Clone Your Fork
-
-```bash
-git clone https://github.com/<your-username>/<repo-name>.git
-cd <repo-name>
-```
-
-### 3. Create a Folder with Your Name
-
-Use lowercase letters and hyphens — no spaces.
-
-```
-<repo-name>/
-└── john-doe/
-    ├── main.py
-    ├── agents.py
-    ├── tools.py
-    ├── requirements.txt
-    ├── .env.example
-    ├── .gitignore
-    └── README.md
-```
-
-> ⚠️ Place all your files inside your named folder. Do not put them in the root of the repo.
+### Key Architectural Highlights
+- **Single-hop Handoffs**: Specialists answer questions directly once routed with zero ping-ponging.
+- **Structured Handoff Payloads**: Every handoff transmits structured `{reason, context}` data.
+- **Handoff Logging**: Logged in real-time to both console (`[HANDOFF] ...`) and `handoff_log.jsonl`.
+- **Dual Interface**: Includes an interactive terminal CLI and a decoupled web stack (FastAPI backend + Streamlit frontend).
 
 ---
-
-## File Responsibilities
-
-| File | Purpose |
-|---|---|
-| `main.py` | Entry point — runs the agent system, handles user input, calls `handle_query()` |
-| `agents.py` | All agent functions — generalist, specialists, intent classifier, handoff logic |
-| `tools.py` | All tool functions — mock databases, tool implementations, tool schemas |
-| `requirements.txt` | All dependencies needed to run the project |
-| `.env.example` | Shows what environment variables are needed (without actual values) |
-| `.gitignore` | Ensures `.env` and cache files are not committed |
-| `README.md` | Your own project README inside your folder (see template below) |
-
-> You are free to add more files if your project needs them (e.g. `database.py` for mock data, `config.py` for constants). The structure above is the minimum expected.
-
----
-
-## Your README.md Template
-
-Include a `README.md` inside your named folder describing your project:
-
-```markdown
-## Project Name
-
-## What it does
-A short description of your agentic system and the problem it solves.
-
-## Agents
-- **Agent 1 (Generalist):** What it handles
-- **Agent 2 (Specialist):** What it handles and what tools it uses
-- *(add more if applicable)*
-
-## Tools
-- `tool_name(params)` — what it does
-- `tool_name(params)` — what it does
-
-## Tech Stack
-- Language: Python
-- LLM: Groq (`model name`)
-- Function Calling: Groq Tool Use API
-
-## How to Run
-
-### 1. Clone and navigate to your folder
-git clone ...
-cd john-doe
-
-### 2. Install dependencies
-pip install -r requirements.txt
-
-### 3. Set up environment variables
-cp .env.example .env
-# Add your GROQ_API_KEY to .env
-
-### 4. Run
-python main.py
-
-## Sample Interaction
-User: <example query>
-→ Handled by: <agent name>
-
-User: <example query that triggers handoff>
-→ Handoff triggered → <specialist agent>
-→ Tool called: <tool name>
-→ Response: ...
 
 ## Environment Variables
-| Variable | Description |
-|---|---|
-| GROQ_API_KEY | Your Groq API key from console.groq.com |
+
+| Variable | Description | Default |
+|---|---|---|
+| `GROQ_API_KEY` | Your Groq Cloud API key | *Required* |
+| `GROQ_MODEL` | Groq LLM model name | `llama-3.3-70b-versatile` |
+| `BACKEND_URL` | Base URL of the FastAPI backend for Streamlit | `http://localhost:8000` |
+
+Create a `.env` file from the provided example:
+```bash
+cp .env.example .env
 ```
+Add your `GROQ_API_KEY` inside `.env`.
 
 ---
 
-## .env.example
+## How to Run Locally
 
-Your `.env.example` should look like this:
-
-```
-GROQ_API_KEY=your_groq_api_key_here
-```
-
----
-
-## .gitignore
-
-Your `.gitignore` should include at minimum:
-
-```
-.env
-__pycache__/
-*.pyc
-*.pyo
-.DS_Store
-```
-
----
-
-## requirements.txt
-
-Generate this after setting up your environment:
+### 1. Set Up Virtual Environment
 
 ```bash
-pip freeze > requirements.txt
+python -m venv .venv
+# On Windows PowerShell:
+.venv\Scripts\Activate.ps1
+# On Linux / macOS:
+# source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-At minimum it should include:
+### 2. Terminal CLI
 
-```
-groq
-python-dotenv
-```
-
----
-
-## Commit and Push
-
+Run the interactive terminal interface:
 ```bash
-git add .
-git commit -m "Add submission - John Doe"
-git push origin main
+python main.py
 ```
 
----
+### 3. FastAPI Backend
 
-## Open a Pull Request
+Run the REST API backend:
+```bash
+uvicorn api:app --reload
+```
+Interactive API documentation is accessible at `http://localhost:8000/docs`.
 
-1. Go to your fork on GitHub
-2. Click **Contribute → Open Pull Request**
-3. Set the PR title to: `Submission - John Doe`
-4. Submit the pull request
+### 4. Streamlit Frontend
 
-> 📌 Your submission is complete once the PR is opened.
-
----
-
-## What to Submit
-
-| File | Required |
-|---|---|
-| `main.py` | ✅ Yes |
-| `agents.py` | ✅ Yes |
-| `tools.py` | ✅ Yes |
-| `requirements.txt` | ✅ Yes |
-| `.gitignore` | ✅ Yes |
-| `.env.example` | ✅ Yes |
-| `README.md` inside your folder | ✅ Yes |
-| `.env` | ❌ Never commit this |
+Run the web user interface:
+```bash
+streamlit run frontend.py
+```
+Open your browser at `http://localhost:8501`.
 
 ---
 
-## Minimum Project Requirements
+## Example Queries
 
-- At least **2 agents** (one generalist, at least one specialist)
-- At least **2 tools** accessible to the specialist agent
-- A working **handoff** from generalist to specialist with context passed
-- Handoff must be **logged** — print which agent triggered it, why, and what was passed
-- Only **one handoff per query** — no ping-ponging
-- Specialist must **not be reachable directly** by the user
+### 1. General Financial Question
+- **User Query**: `"What is an emergency fund and why do I need one?"`
+- **Handled By**: **Generalist**
+- **Handoff**: None (answered directly by the Generalist).
+
+### 2. Loan EMI Calculation
+- **User Query**: `"Calculate EMI for a loan of 500000 at 9.5% annual interest for 60 months."`
+- **Handled By**: **Loan Specialist**
+- **Handoff**: `Generalist -> Loan Specialist` | Tool called: `calculate_emi(principal=500000, annual_rate=9.5, tenure_months=60)`
+- **Result**: ₹10,500.93 per month.
+
+### 3. Investment & Exchange Rate Query
+- **User Query**: `"Calculate compound returns for 50000 at 8% annual rate for 3 years."` or `"What is the exchange rate for USD/INR?"`
+- **Handled By**: **Investment Specialist**
+- **Handoff**: `Generalist -> Investment Specialist` | Tool called: `calculate_returns` or `get_exchange_rate`
+- **Result**: ₹62,985.60 / 1 USD = 86.50 INR.
 
 ---
+
+## Live Demo
+
+- App (Streamlit): https://month3sprintaproject-qgmsekinagmxlq3zytksrw.streamlit.app
+- API docs (Swagger): https://month3-sprint-a-project.onrender.com/docs
+
+> **Note:** The application is hosted on free tiers. The backend service may spin down during periods of inactivity, so the first request after idle may take about a minute to wake up. In addition, handoff logs (`handoff_log.jsonl`) reset on service restart.
+
+### Deployment Settings
+
+- **Render** (Web Service):
+  - **Branch**: `athul-pp`
+  - **Build Command**: `pip install -r requirements.txt`
+  - **Start Command**: `uvicorn api:app --host 0.0.0.0 --port $PORT`
+  - **Health Check Path**: `/health`
+  - **Environment Variables**: `GROQ_API_KEY`
+- **Streamlit Community Cloud**:
+  - **Branch**: `athul-pp`
+  - **Main file path**: `frontend.py`
+  - **Secret**: `BACKEND_URL`
